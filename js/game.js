@@ -31,6 +31,9 @@ window.onload = function() {
     var stateText;
     var livingEnemies = [];
 
+    var nextKill;
+    var minDist;
+
     function create() {
 
         game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -109,6 +112,7 @@ window.onload = function() {
             for (var x = 0; x < 10; x++)
             {
                 var alien = aliens.create(x * 48, y * 50, 'invader');
+                alien.name = 'alien_' + x + '_' + y;
                 alien.anchor.setTo(0.5, 0.5);
                 alien.animations.add('fly', [ 0, 1, 2, 3 ], 20, true);
                 alien.play('fly');
@@ -148,20 +152,40 @@ window.onload = function() {
         //  Reset the player, then check for movement keys
         player.body.velocity.setTo(0, 0);
 
-        if (cursors.left.isDown)
-        {
-            player.body.velocity.x = -200;
+        if (nextKill !== undefined && !nextKill.alive) {
+            nextKill = undefined;
+            minDist = undefined;
         }
-        else if (cursors.right.isDown)
-        {
-            player.body.velocity.x = 200;
+
+        if (nextKill === undefined) {
+            aliens.forEachAlive(function (alien) {
+                current_alien_position = alien.position.clone();
+                current_alien_position.add(aliens.x, aliens.y);
+                var dist = Phaser.Point.distance(current_alien_position, player.position);
+                console.log(alien.name + ' ' + dist.toString());
+                if (minDist === undefined || dist < minDist) {
+                    minDist = dist;
+                    nextKill = alien;
+                }
+            }, this);
+        }
+
+        if (nextKill !== undefined) {
+            if (nextKill.x + aliens.x < player.x - 50)
+            {
+                player.body.velocity.x = -200;
+            }
+            else if (nextKill.x + aliens.x > player.x + 50)
+            {
+                player.body.velocity.x = 200;
+            }
         }
 
         //  Firing?
-        if (fireButton.isDown)
-        {
+        //if (fireButton.isDown)
+        //{
             fireBullet();
-        }
+        //}
 
         if (game.time.now > firingTimer)
         {
@@ -187,6 +211,7 @@ window.onload = function() {
 
         //  When a bullet hits an alien we kill them both
         bullet.kill();
+        console.log('kill: '+ alien.name);
         alien.kill();
 
         //  Increase the score
@@ -317,10 +342,14 @@ window.onload = function() {
 
     }
 
-    function escape() {
+    function test(position) {
+        var result = true;
         enemyBullets.forEachAlive(function (bullet) {
+            if (Phaser.Point.distance(position, position) < 120) {
+                return false;
+            }
         }, this);
-
+        return result;
     }
 
 };
