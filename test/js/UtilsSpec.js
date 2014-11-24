@@ -38,5 +38,32 @@ define(['js/utils'], function(utils) {
                 expect(utils.timeToHitY(body, 350)).toBeUndefined();
             });
         });
+
+        describe("positionWhenHitY", function() {
+            it("returns the (X,Y,T) position of a moving body when it hits Y", function() {
+                var body = {};
+                body.position = {X: 10, Y: 50};
+                body.velocity = {X: 5, Y: 20};
+                expect(utils.positionWhenHitY(body, 110)).toEqual({X: 25, Y: 110, T: 3});
+            });
+            it("returns (undefined, Y, undefined) position when the body is still relative to Y", function() {
+                var body = {};
+                body.position = {X: 10, Y: 50};
+                body.velocity = {X: 15, Y: 0};
+                expect(utils.positionWhenHitY(body, 110)).toEqual({X: undefined, Y: 110, T: undefined});
+            });
+        });
+
+        describe("threatArea function", function() {
+            it("returns a rectangular of threat to hit of a moving body when it comes through an Y range", function() {
+                var body = {};
+                body.position = {X: 10, Y: 50};
+                body.velocity = {X: 5, Y: 20};
+                expect(utils.threatArea(body, 110, 130)).toEqual({
+                    Top: {X: 25, Y: 110, T: 3},
+                    Bottom: {X: 30, Y: 130, T: 4}
+                });
+            });
+        });
     });
 });
