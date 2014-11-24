@@ -1,4 +1,4 @@
-define(['js/utils'], function(utils) {
+define(["js/utils"], function(utils) {
 
     describe("Utils package", function() {
         describe("timeToHitY function", function() {
