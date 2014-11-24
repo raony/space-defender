@@ -62,7 +62,7 @@ require(['ship'], function(ship) {
         enemyBullets.setAll('checkWorldBounds', true);
 
         //  The hero!
-        player = new ship();
+        player = new ship(Phaser, game, "ship", 400, 500);
 
         //  The baddies!
         aliens = game.add.group();
@@ -86,10 +86,10 @@ require(['ship'], function(ship) {
 
         for (var i = 0; i < 3; i++) 
         {
-            var ship = lives.create(game.world.width - 100 + (30 * i), 60, 'ship');
-            ship.anchor.setTo(0.5, 0.5);
-            ship.angle = 90;
-            ship.alpha = 0.4;
+            var shiplive = lives.create(game.world.width - 100 + (30 * i), 60, 'ship');
+            shiplive.anchor.setTo(0.5, 0.5);
+            shiplive.angle = 90;
+            shiplive.alpha = 0.4;
         }
 
         //  An explosion pool
@@ -147,7 +147,7 @@ require(['ship'], function(ship) {
         starfield.tilePosition.y += 2;
 
         //  Reset the player, then check for movement keys
-        player.body.velocity.setTo(0, 0);
+        player.stop();
 
         if (nextKill !== undefined && !nextKill.alive) {
             nextKill = undefined;
@@ -156,7 +156,7 @@ require(['ship'], function(ship) {
 
         if (nextKill === undefined) {
             aliens.forEachAlive(function (alien) {
-                var dist = Phaser.Point.distance(alien.world, player.position);
+                var dist = Phaser.Point.distance(alien.world, player.sprite.position);
                 //console.log(alien.name + ' ' + dist.toString());
                 if (minDist === undefined || dist < minDist) {
                     minDist = dist;
@@ -166,27 +166,27 @@ require(['ship'], function(ship) {
         }
 
         if (nextKill !== undefined) {
-            if (nextKill.world.x < player.x - 50)
+            if (nextKill.world.x < player.sprite.x - 50)
             {
-                player.body.velocity.x = -200;
+                player.sprite.body.velocity.x = -200;
             }
-            else if (nextKill.world.x > player.x + 50)
+            else if (nextKill.world.x > player.sprite.x + 50)
             {
-                player.body.velocity.x = 200;
+                player.sprite.body.velocity.x = 200;
             } else {
            }
 
         }
-        var current_position = player.position.clone();
+        var current_position = player.sprite.position.clone();
 
         if (!test(current_position)) {
             console.log('test alternatives');
             if (test(current_position.clone().add(200,0))) {
                 console.log('right dodge');
-                player.body.velocity.x = 200;
+                player.sprite.body.velocity.x = 200;
             } else if (test(current_position.clone().add(-200,0))) {
                 console.log('left dodge');
-                player.body.velocity.x = -200;
+                player.sprite.body.velocity.x = -200;
             }
         }
 
@@ -204,7 +204,7 @@ require(['ship'], function(ship) {
 
         //  Run collision
         game.physics.arcade.overlap(bullets, aliens, collisionHandler, null, this);
-        game.physics.arcade.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
+        game.physics.arcade.overlap(enemyBullets, player.sprite, enemyHitsPlayer, null, this);
 
     }
 
@@ -261,13 +261,13 @@ require(['ship'], function(ship) {
 
         //  And create an explosion :)
         var explosion = explosions.getFirstExists(false);
-        explosion.reset(player.body.x, player.body.y);
+        explosion.reset(player.sprite.body.x, player.sprite.body.y);
         explosion.play('kaboom', 30, false, true);
 
         // When the player dies
         if (lives.countLiving() < 1)
         {
-            player.kill();
+            player.sprite.kill();
             enemyBullets.callAll('kill');
 
             stateText.text=" GAME OVER \n Click to restart";
@@ -303,7 +303,7 @@ require(['ship'], function(ship) {
             // And fire the bullet from this enemy
             enemyBullet.reset(shooter.body.x, shooter.body.y);
 
-            game.physics.arcade.moveToObject(enemyBullet,player,120);
+            game.physics.arcade.moveToObject(enemyBullet,player.sprite,120);
             firingTimer = game.time.now + 2000;
         }
 
@@ -320,7 +320,7 @@ require(['ship'], function(ship) {
             if (bullet)
             {
                 //  And fire it
-                bullet.reset(player.x, player.y + 8);
+                bullet.reset(player.sprite.x, player.sprite.y + 8);
                 bullet.body.velocity.y = -400;
                 bulletTime = game.time.now + 200;
             }
@@ -346,7 +346,7 @@ require(['ship'], function(ship) {
         createAliens();
 
         //revives the player
-        player.revive();
+        player.sprite.revive();
         //hides the text
         stateText.visible = false;
 
