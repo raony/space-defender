@@ -58,5 +58,20 @@ define(["js/ship", "js/tracking"], function(ship, tracking) {
             target.update();
             expect(game.physics.arcade.moveToObject).toHaveBeenCalledWith(target.sprite, { x: 200, y: 200 }, 200);
         });
+        it("should stop when right below the target", function() {
+            var aship = new ship(Phaser, game, "ship", 100, 200);
+            var simple = new tracking.simple([]);
+            var alien = { position: {X: 200, Y: 50}, alive: function() { return this._alive; }, _alive: true };
+            spyOn(simple, "rightmost").and.returnValue(alien);
+            aship.setTracking(simple);
+            spyOn(game.physics.arcade, "moveToObject");
+            spyOn(aship, "stop");
+            aship.sprite.y = 200;
+            aship.update();
+            expect(aship.stop).not.toHaveBeenCalled();
+            alien._alive = false;
+            aship.update();
+            expect(aship.stop).toHaveBeenCalled();
+        });
     });
 });

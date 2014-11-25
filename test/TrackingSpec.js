@@ -12,13 +12,7 @@ define(["js/tracking"], function(tracking) {
                 center.alive = isAlive;
                 leftmost = { position: { X: 50, Y: 60}, _alive: true };
                 leftmost.alive = isAlive;
-                enemies = {
-                    forEachAlive: function(fn) {
-                        fn(leftmost);
-                        fn(rightmost);
-                        fn(center);
-                    }
-                };
+                enemies = [leftmost, rightmost, center];
             });
             it("is able to recognize rightmost alive enemy", function() {
                 rightmost._alive = false;

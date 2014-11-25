@@ -5,14 +5,21 @@ define(function() {
         this.sprite = game.add.sprite(X, Y, sprite);
         this.sprite.anchor.setTo(0.5, 0.5);
         this.game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
+        this.target = undefined;
     };
 
     ship_constructor.prototype.stop = function() {
         this.sprite.body.velocity.setTo(0,0);
     };
 
-    ship_constructor.prototype.update = function(enemies) {
-        this.tracking.update(enemies);
+    ship_constructor.prototype.update = function() {
+        this.tracking.update();
+        //console.log(this.sprite.x + " , " + this.target.position.X);
+        if (this.target) {
+            this.game.physics.arcade.moveToObject(this.sprite, {x: this.target.position.X, y: this.sprite.y}, 200);
+        } else {
+            this.stop();
+        }
     }
 
     ship_constructor.prototype.setTracking = function(tracking) {
@@ -21,7 +28,7 @@ define(function() {
     }
 
     ship_constructor.prototype.targetChanged = function(enemy) {
-        this.game.physics.arcade.moveToObject(this.sprite, {x: enemy.position.X, y: this.sprite.y}, 200);
+        this.target = enemy;
     }
 
     return ship_constructor;

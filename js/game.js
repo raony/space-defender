@@ -1,4 +1,4 @@
-require(['ship'], function(ship) {
+require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
     var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', 
             { preload: preload, create: create, update: update, render: render });
 
@@ -61,15 +61,20 @@ require(['ship'], function(ship) {
         enemyBullets.setAll('outOfBoundsKill', true);
         enemyBullets.setAll('checkWorldBounds', true);
 
-        //  The hero!
-        player = new ship(Phaser, game, "ship", 400, 500);
-
         //  The baddies!
         aliens = game.add.group();
         aliens.enableBody = true;
         aliens.physicsBodyType = Phaser.Physics.ARCADE;
 
         createAliens();
+        
+        //  The hero!
+        player = new ship(Phaser, game, "ship", 400, 500);
+        var aliensArray = [];
+        aliens.forEach(function (currentAlien) {
+            aliensArray.splice(0,0,new alien(currentAlien));
+        });
+        player.setTracking(new tracking.simple(aliensArray));
 
         //  The score
         scoreString = 'Score : ';
@@ -146,49 +151,21 @@ require(['ship'], function(ship) {
         //  Scroll the background
         starfield.tilePosition.y += 2;
 
+        player.update();
+
         //  Reset the player, then check for movement keys
-        player.stop();
+        //var current_position = player.sprite.position.clone();
 
-        if (nextKill !== undefined && !nextKill.alive) {
-            nextKill = undefined;
-            minDist = undefined;
-        }
-
-        if (nextKill === undefined) {
-            aliens.forEachAlive(function (alien) {
-                var dist = Phaser.Point.distance(alien.world, player.sprite.position);
-                //console.log(alien.name + ' ' + dist.toString());
-                if (minDist === undefined || dist < minDist) {
-                    minDist = dist;
-                    nextKill = alien;
-                }
-            }, this);
-        }
-
-        if (nextKill !== undefined) {
-            if (nextKill.world.x < player.sprite.x - 50)
-            {
-                player.sprite.body.velocity.x = -200;
-            }
-            else if (nextKill.world.x > player.sprite.x + 50)
-            {
-                player.sprite.body.velocity.x = 200;
-            } else {
-           }
-
-        }
-        var current_position = player.sprite.position.clone();
-
-        if (!test(current_position)) {
-            console.log('test alternatives');
-            if (test(current_position.clone().add(200,0))) {
-                console.log('right dodge');
-                player.sprite.body.velocity.x = 200;
-            } else if (test(current_position.clone().add(-200,0))) {
-                console.log('left dodge');
-                player.sprite.body.velocity.x = -200;
-            }
-        }
+        //if (!test(current_position)) {
+        //    console.log('test alternatives');
+        //    if (test(current_position.clone().add(200,0))) {
+        //        console.log('right dodge');
+        //        player.sprite.body.velocity.x = 200;
+        //    } else if (test(current_position.clone().add(-200,0))) {
+        //        console.log('left dodge');
+        //        player.sprite.body.velocity.x = -200;
+        //    }
+        //}
 
 
         //  Firing?
@@ -199,7 +176,7 @@ require(['ship'], function(ship) {
 
         if (game.time.now > firingTimer)
         {
-            enemyFires();
+            //enemyFires();
         }
 
         //  Run collision
