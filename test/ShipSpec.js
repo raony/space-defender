@@ -1,4 +1,4 @@
-define(["js/ship"], function(ship) {
+define(["js/ship", "js/tracking"], function(ship, tracking) {
     describe("Ship", function() {
         var Phaser, game;
         beforeEach(function () {
@@ -21,6 +21,9 @@ define(["js/ship"], function(ship) {
                                 setTo: function(x, y) {}
                             }
                         }
+                    },
+                    arcade: {
+                        moveToObject: function() {}
                     }
                 }
             }
@@ -36,6 +39,24 @@ define(["js/ship"], function(ship) {
             spyOn(target.sprite.body.velocity, "setTo");
             target.stop();
             expect(target.sprite.body.velocity.setTo).toHaveBeenCalledWith(0,0);
+        });
+        it("should subscribe to onTargetChanges when setTracking", function() {
+            var target = new ship(Phaser, game, "ship", 100, 200);
+            var simple = new tracking.simple([]);
+            spyOn(target, 'targetChanged');
+            target.setTracking(simple);
+            simple.callback();
+            expect(target.targetChanged).toHaveBeenCalled();
+        });
+        it("should move sprite to target when update", function() {
+            var target = new ship(Phaser, game, "ship", 100, 200);
+            var simple = new tracking.simple([]);
+            spyOn(simple, "rightmost").and.returnValue({ position: {X: 200, Y: 50} });
+            target.setTracking(simple);
+            spyOn(game.physics.arcade, "moveToObject");
+            target.sprite.y = 200;
+            target.update();
+            expect(game.physics.arcade.moveToObject).toHaveBeenCalledWith(target.sprite, { x: 200, y: 200 }, 200);
         });
     });
 });

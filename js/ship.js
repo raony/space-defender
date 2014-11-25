@@ -11,5 +11,18 @@ define(function() {
         this.sprite.body.velocity.setTo(0,0);
     };
 
+    ship_constructor.prototype.update = function(enemies) {
+        this.tracking.update(enemies);
+    }
+
+    ship_constructor.prototype.setTracking = function(tracking) {
+        this.tracking = tracking;
+        tracking.onTargetChanges(this.targetChanged.bind(this));
+    }
+
+    ship_constructor.prototype.targetChanged = function(enemy) {
+        this.game.physics.arcade.moveToObject(this.sprite, {x: enemy.position.X, y: this.sprite.y}, 200);
+    }
+
     return ship_constructor;
 });
