@@ -69,7 +69,7 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
         createAliens();
         
         //  The hero!
-        player = new ship(Phaser, game, "ship", 400, 500);
+        player = new ship(Phaser, game, "ship", 400, 500, 20);
         var aliensArray = [];
         aliens.forEach(function (currentAlien) {
             aliensArray.splice(0,0,new alien(currentAlien));
@@ -151,32 +151,13 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
         //  Scroll the background
         starfield.tilePosition.y += 2;
 
-        player.update();
+        player.update(enemyBullets);
 
-        //  Reset the player, then check for movement keys
-        //var current_position = player.sprite.position.clone();
-
-        //if (!test(current_position)) {
-        //    console.log('test alternatives');
-        //    if (test(current_position.clone().add(200,0))) {
-        //        console.log('right dodge');
-        //        player.sprite.body.velocity.x = 200;
-        //    } else if (test(current_position.clone().add(-200,0))) {
-        //        console.log('left dodge');
-        //        player.sprite.body.velocity.x = -200;
-        //    }
-        //}
-
-
-        //  Firing?
-        //if (fireButton.isDown)
-        //{
-            fireBullet();
-        //}
+        fireBullet();
 
         if (game.time.now > firingTimer)
         {
-            //enemyFires();
+            enemyFires();
         }
 
         //  Run collision
@@ -281,7 +262,7 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
             enemyBullet.reset(shooter.body.x, shooter.body.y);
 
             game.physics.arcade.moveToObject(enemyBullet,player.sprite,120);
-            firingTimer = game.time.now + 2000;
+            firingTimer = game.time.now + 1000;
         }
 
     }

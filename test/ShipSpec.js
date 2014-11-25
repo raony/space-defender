@@ -4,6 +4,9 @@ define(["js/ship", "js/tracking"], function(ship, tracking) {
         beforeEach(function () {
             Phaser = {Physics: {ARCADE: "ARCADE"}};
             game = {
+                time: {
+                    now: 0
+                },
                 add: {
                     sprite: function(X, Y, sprite) {
                         return {

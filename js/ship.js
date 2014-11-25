@@ -1,22 +1,40 @@
 define(function() {
-    var ship_constructor = function(Phaser, game, sprite, X, Y) {
+    var ship_constructor = function(Phaser, game, sprite, X, Y, responseTime) {
+        if (responseTime === undefined)
+            this.responseTime = 0
+        else
+            this.responseTime = responseTime
         this.Phaser = Phaser;
         this.game = game;
         this.sprite = game.add.sprite(X, Y, sprite);
         this.sprite.anchor.setTo(0.5, 0.5);
         this.game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
         this.target = undefined;
+        this.timer = this.game.time.now;
     };
 
     ship_constructor.prototype.stop = function() {
         this.sprite.body.velocity.setTo(0,0);
     };
 
-    ship_constructor.prototype.update = function() {
+    ship_constructor.prototype.update = function(bullets) {
+        var safe = 1;
+        if (this.responseTime > 0 && this.game.time.now <= this.timer)
+            return;
+        if (bullets) {
+            bullets.forEachAlive(function (bullet) {
+                if (Phaser.Point.distance(bullet.position, this.sprite.position) < 60) {
+                    safe = -1;
+                }
+            }, this);
+        }
+        this.timer = this.game.time.now + this.responseTime
         this.tracking.update();
         //console.log(this.sprite.x + " , " + this.target.position.X);
         if (this.target) {
-            this.game.physics.arcade.moveToObject(this.sprite, {x: this.target.position.X, y: this.sprite.y}, 200);
+            this.game.physics.arcade.moveToObject(this.sprite, {x: this.target.position.X, y: this.sprite.y}, 200*safe);
+        } else if (safe == -1) {
+            this.game.physics.arcade.moveToObject(this.sprite, {x: this.sprite.x+200, y: this.sprite.y}, 200);
         } else {
             this.stop();
         }
