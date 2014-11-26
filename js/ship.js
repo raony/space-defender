@@ -18,23 +18,26 @@ define(function() {
     };
 
     ship_constructor.prototype.update = function(bullets) {
-        var safe = 1;
+        var safe = 0;
         if (this.responseTime > 0 && this.game.time.now <= this.timer)
             return;
         if (bullets) {
             bullets.forEachAlive(function (bullet) {
                 if (Phaser.Point.distance(bullet.position, this.sprite.position) < 60) {
-                    safe = -1;
+                    if (bullet.position.x < this.sprite.position.x)
+                        safe = 1;
+                    else
+                        safe = -1;
                 }
             }, this);
         }
         this.timer = this.game.time.now + this.responseTime
         this.tracking.update();
         //console.log(this.sprite.x + " , " + this.target.position.X);
-        if (this.target) {
-            this.game.physics.arcade.moveToObject(this.sprite, {x: this.target.position.X, y: this.sprite.y}, 200*safe);
-        } else if (safe == -1) {
-            this.game.physics.arcade.moveToObject(this.sprite, {x: this.sprite.x+200, y: this.sprite.y}, 200);
+        if (safe != 0) {
+            this.game.physics.arcade.moveToObject(this.sprite, {x: this.sprite.x+200*safe, y: this.sprite.y}, 200);
+        } else if (this.target) {
+            this.game.physics.arcade.moveToObject(this.sprite, {x: this.target.position.X, y: this.sprite.y}, 200);
         } else {
             this.stop();
         }
