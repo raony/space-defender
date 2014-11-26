@@ -83,12 +83,12 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
         
 
         //  The score
-        scoreString = 'Score : ';
+        scoreString = 'Casualties : ';
         scoreText = game.add.text(10, 10, scoreString + score, { font: '34px Arial', fill: '#fff' });
 
         //  Lives
         lives = game.add.group();
-        game.add.text(game.world.width - 100, 10, 'Lives : ', { font: '34px Arial', fill: '#fff' });
+        game.add.text(game.world.width - 150, 10, 'Enemies : ', { font: '34px Arial', fill: '#fff' });
 
         //  Text
         stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '84px Arial', fill: '#fff' });
