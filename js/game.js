@@ -20,9 +20,18 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
     var bulletTime = 0;
     var cursors;
     var fireButton;
+    var shieldButton;
     var explosions;
     var starfield;
     var score = 0;
+    var energy = 3000;
+    var maxEnergy = 3000;
+    var fireCost = 50;
+    var recoveryRate = 65;
+    var originalFireCost = 50;
+    var shieldCost = 300;
+    var resting = true;
+    var originalShieldCost = 300;
     var scoreString = '';
     var scoreText;
     var lives;
@@ -30,6 +39,7 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
     var firingTimer = 0;
     var stateText;
     var livingEnemies = [];
+    var descends = 0;
 
     var nextKill;
     var minDist;
@@ -61,6 +71,9 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
         enemyBullets.setAll('outOfBoundsKill', true);
         enemyBullets.setAll('checkWorldBounds', true);
 
+        //  The hero!
+        player = new ship(Phaser, game, "ship", 400, 500, 20);
+
         //  The baddies!
         aliens = game.add.group();
         aliens.enableBody = true;
@@ -68,13 +81,6 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
 
         createAliens();
         
-        //  The hero!
-        player = new ship(Phaser, game, "ship", 400, 500, 20);
-        var aliensArray = [];
-        aliens.forEach(function (currentAlien) {
-            aliensArray.splice(0,0,new alien(currentAlien));
-        });
-        player.setTracking(new tracking.simple(aliensArray));
 
         //  The score
         scoreString = 'Score : ';
@@ -88,6 +94,11 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
         stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '84px Arial', fill: '#fff' });
         stateText.anchor.setTo(0.5, 0.5);
         stateText.visible = false;
+
+        // energy
+        energyString = 'Energy : ';
+        energyText = game.add.text(game.world.centerX, 10, energyString + energy, { font: '34px Arial', fill: '#fff' });
+        energyText.anchor.setTo(0.5, 0);
 
         for (var i = 0; i < 3; i++) 
         {
@@ -105,20 +116,22 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
         //  And some controls to play the game with
         cursors = game.input.keyboard.createCursorKeys();
         fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        shieldButton = game.input.keyboard.addKey(Phaser.Keyboard.S);
     }
 
     function createAliens () {
+        descends = 0;
 
         for (var y = 0; y < 4; y++)
         {
             for (var x = 0; x < 10; x++)
             {
-                var alien = aliens.create(x * 48, y * 50, 'invader');
-                alien.name = 'alien_' + x + '_' + y;
-                alien.anchor.setTo(0.5, 0.5);
-                alien.animations.add('fly', [ 0, 1, 2, 3 ], 20, true);
-                alien.play('fly');
-                alien.body.moves = false;
+                var _alien = aliens.create(x * 48, y * 50, 'invader');
+                _alien.name = 'alien_' + x + '_' + y;
+                _alien.anchor.setTo(0.5, 0.5);
+                _alien.animations.add('fly', [ 0, 1, 2, 3 ], 20, true);
+                _alien.play('fly');
+                _alien.body.moves = false;
             }
         }
 
@@ -130,6 +143,13 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
 
         //  When the tween loops it calls descend
         tween.onLoop.add(descend, this);
+
+
+        var aliensArray = [];
+        aliens.forEach(function (currentAlien) {
+            aliensArray.splice(0,0,new alien(currentAlien));
+        });
+        player.setTracking(new tracking.simple(aliensArray));
     }
 
     function setupInvader (invader) {
@@ -142,7 +162,10 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
 
     function descend() {
 
-        aliens.y += 10;
+        if (descends < 15) {
+            aliens.y += 10;
+            descends += 1;
+        }
 
     }
 
@@ -154,16 +177,37 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
         player.update(enemyBullets);
 
         fireBullet();
-
+        
         if (game.time.now > firingTimer)
         {
-            enemyFires();
+            if (fireButton.isDown) {
+                energy -= fireCost;
+                fireCost = Math.floor(fireCost*1.6);
+                if (energy > 0) {
+                    enemyFires();
+                    firingTimer = game.time.now + 500;
+                }
+                resting = false;
+            } else {
+                resting = true;
+            }
         }
+
 
         //  Run collision
         game.physics.arcade.overlap(bullets, aliens, collisionHandler, null, this);
         game.physics.arcade.overlap(enemyBullets, player.sprite, enemyHitsPlayer, null, this);
+        if (resting && !shieldButton.isDown) {
+            fireCost = originalFireCost;
+            shieldCost = originalShieldCost;
+            energy += recoveryRate;
+        }
 
+        if (energy >= maxEnergy)
+            energy = maxEnergy;
+        else if (energy < 0) 
+            energy = 0;
+        energyText.text = energyString + energy;
     }
 
     function render() {
@@ -180,11 +224,13 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
         //  When a bullet hits an alien we kill them both
         bullet.kill();
         //console.log('kill: '+ alien.name);
-        alien.kill();
-
-        //  Increase the score
-        score += 20;
-        scoreText.text = scoreString + score;
+        if (shieldButton.isDown && energy >= shieldCost)  {
+            energy -= shieldCost;
+        } else {
+            alien.kill();
+            score += 20;
+            scoreText.text = scoreString + score;
+        }
 
         //  And create an explosion :)
         var explosion = explosions.getFirstExists(false);
@@ -219,13 +265,15 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
 
         //  And create an explosion :)
         var explosion = explosions.getFirstExists(false);
-        explosion.reset(player.sprite.body.x, player.sprite.body.y);
+        explosion.reset(player.body.x, player.body.y);
         explosion.play('kaboom', 30, false, true);
+
+        player.reset(400,500);
 
         // When the player dies
         if (lives.countLiving() < 1)
         {
-            player.sprite.kill();
+            player.kill();
             enemyBullets.callAll('kill');
 
             stateText.text=" GAME OVER \n Click to restart";
@@ -261,8 +309,7 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
             // And fire the bullet from this enemy
             enemyBullet.reset(shooter.body.x, shooter.body.y);
 
-            game.physics.arcade.moveToObject(enemyBullet,player.sprite,120);
-            firingTimer = game.time.now + 1000;
+            game.physics.arcade.moveToPointer(enemyBullet,120);
         }
 
     }

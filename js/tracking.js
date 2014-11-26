@@ -28,8 +28,6 @@ define(function() {
             };
             this.update = function () {
                 if (this.callback) {
-                    if (this.lastTarget)
-                        console.log(this.lastTarget.alive());
                     if (!this.lastTarget || !this.lastTarget.alive()) {
                         var newTarget;
                         if (this.right) {

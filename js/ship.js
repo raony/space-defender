@@ -9,6 +9,7 @@ define(function() {
         this.sprite = game.add.sprite(X, Y, sprite);
         this.sprite.anchor.setTo(0.5, 0.5);
         this.game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
+        this.sprite.body.collideWorldBounds = true;
         this.target = undefined;
         this.timer = this.game.time.now;
     };
@@ -31,7 +32,7 @@ define(function() {
                 }
             }, this);
         }
-        this.timer = this.game.time.now + this.responseTime
+        this.timer = this.game.time.now + this.responseTime;
         this.tracking.update();
         //console.log(this.sprite.x + " , " + this.target.position.X);
         if (safe != 0) {
