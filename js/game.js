@@ -91,7 +91,7 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
         game.add.text(game.world.width - 150, 10, 'Enemies : ', { font: '34px Arial', fill: '#fff' });
 
         //  Text
-        stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '84px Arial', fill: '#fff' });
+        stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '64px Arial', fill: '#fff' });
         stateText.anchor.setTo(0.5, 0.5);
         stateText.visible = false;
 
@@ -243,7 +243,7 @@ require(['ship', 'tracking', 'alien'], function(ship, tracking, alien) {
             scoreText.text = scoreString + score;
 
             enemyBullets.callAll('kill',this);
-            stateText.text = " You Won, \n Click to restart";
+            stateText.text = " All units lost, \n Click to send a \n new battalion";
             stateText.visible = true;
 
             //the "click to restart" handler
